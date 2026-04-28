@@ -1,0 +1,16 @@
+/* @tailwind base; - 微信小程序不支持通配符选择器，移除 base 层 */
+@tailwind components;
+@tailwind utilities;
+
+/* 尊重用户动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-bounce,
+  .animate-ping {
+    animation: none;
+  }
+  .breathing-light {
+    animation: none;
+    box-shadow: 0 0 30px rgba(240, 165, 0, 0.7), 0 0 60px rgba(240, 165, 0, 0.35);
+  }
+}

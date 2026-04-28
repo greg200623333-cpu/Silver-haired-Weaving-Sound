@@ -1,0 +1,40 @@
+{
+  "name": "silver-hair-weaver-taro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "银发织音 — 适老化回忆录音室 (Taro 小程序端)",
+  "templateInfo": {
+    "name": "react-ts",
+    "typescript": true
+  },
+  "scripts": {
+    "dev:weapp": "npm run build:weapp -- --watch",
+    "build:weapp": "taro build --type weapp",
+    "dev:h5": "npm run build:h5 -- --watch",
+    "build:h5": "taro build --type h5"
+  },
+  "dependencies": {
+    "@tarojs/components": "~4.0.13",
+    "@tarojs/plugin-framework-react": "~4.0.13",
+    "@tarojs/plugin-platform-h5": "~4.0.13",
+    "@tarojs/plugin-platform-weapp": "~4.0.13",
+    "@tarojs/react": "~4.0.13",
+    "@tarojs/runtime": "~4.0.13",
+    "@tarojs/taro": "~4.0.13",
+    "@tarojs/webpack5-runner": "~4.0.13",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.29.2",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@tarojs/cli": "~4.0.13",
+    "@types/react": "^18.2.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.2.0",
+    "webpack": "^5.84.1"
+  }
+}
