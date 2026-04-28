@@ -25,7 +25,7 @@ git pull origin main
 
 echo ""
 echo "2. 安装依赖..."
-npm install --production
+npm install --omit=dev --registry=https://registry.npmmirror.com
 
 echo ""
 echo "3. 重新构建..."

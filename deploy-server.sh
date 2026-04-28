@@ -168,7 +168,7 @@ echo ""
 # ================================================================
 echo "步骤 4：安装依赖..."
 echo "----------------------------------------"
-npm install --production
+npm install --omit=dev --registry=https://registry.npmmirror.com
 echo "  ✓ 依赖安装完成"
 echo ""
 
