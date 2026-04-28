@@ -16,8 +16,8 @@ pm2 stop nextjs-backend 2>/dev/null || true
 lsof -ti:3001 | xargs kill -9 2>/dev/null || true
 
 # 清理构建文件
-rm -rf .next node_modules package-lock.json
-echo "  ✓ 旧环境已清理"
+rm -rf .next
+echo "  ✓ 旧环境已清理（保留 node_modules）"
 
 echo ""
 echo "1. 拉取最新代码..."

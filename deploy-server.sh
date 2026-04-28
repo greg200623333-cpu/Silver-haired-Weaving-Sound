@@ -54,9 +54,9 @@ else
 fi
 
 # 清理构建文件
-if [ -d ".next" ] || [ -d "node_modules" ]; then
+if [ -d ".next" ]; then
     echo "  清理构建文件..."
-    rm -rf .next node_modules package-lock.json
+    rm -rf .next
     echo "  ✓ 已清理旧的构建文件"
 else
     echo "  ✓ 无需清理构建文件"
