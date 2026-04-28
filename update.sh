@@ -24,30 +24,26 @@ echo "1. 拉取最新代码..."
 git pull origin main
 
 echo ""
-echo "2. 安装依赖（需要手动执行）..."
-echo "  ⚠️  请在另一个终端窗口执行："
-echo "  cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
-echo "  npm install --omit=dev"
-echo ""
-echo "  安装完成后，按回车继续..."
-read -p ""
-
-echo ""
-echo "3. 重新构建..."
+echo "2. 重新构建..."
 npm run build
 
 echo ""
-echo "4. 启动 PM2..."
+echo "3. 启动 PM2..."
 pm2 start ecosystem.config.js
 
 echo ""
-echo "5. 查看状态..."
+echo "4. 查看状态..."
 pm2 status
 
 echo ""
-echo "6. 查看最近日志..."
+echo "5. 查看最近日志..."
 pm2 logs nextjs-backend --lines 20 --nostream
 
+echo ""
+echo ""
+echo "⚠️  注意：如果删除了 node_modules，需要手动安装依赖："
+echo "  cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
+echo "  npm install --omit=dev"
 echo ""
 echo "=========================================="
 echo "  ✅ 更新完成！"
