@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
             max_tokens: 120,
             stream: true,
           }),
-          signal: AbortSignal.any([request.signal, AbortSignal.timeout(12000)]),
+          signal: AbortSignal.any([request.signal, AbortSignal.timeout(30000)]),
         });
 
         if (!res.ok) {

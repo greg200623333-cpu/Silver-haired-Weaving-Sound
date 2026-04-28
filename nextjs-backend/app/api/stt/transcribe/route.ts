@@ -24,11 +24,28 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get('content-type') || '';
     console.log('[STT/Youdao] Content-Type:', contentType);
 
-    const formData = await request.formData();
-    const audioFile = formData.get('audio') as File | null;
+    let audioFile: File | null = null;
+
+    // 尝试解析 formData
+    try {
+      const formData = await request.formData();
+      audioFile = formData.get('audio') as File | null;
+
+      if (!audioFile) {
+        console.log('[STT/Youdao] 未找到音频文件，formData keys:', Array.from(formData.keys()));
+      }
+    } catch (err: any) {
+      console.log('[STT/Youdao] formData 解析失败:', err.message);
+      // 如果 formData 解析失败，尝试直接读取 body
+      const buffer = await request.arrayBuffer();
+      if (buffer.byteLength > 0) {
+        // 创建一个 File 对象
+        audioFile = new File([buffer], 'audio.mp3', { type: 'audio/mpeg' });
+        console.log('[STT/Youdao] 从 body 读取音频，大小:', (buffer.byteLength / 1024).toFixed(1), 'KB');
+      }
+    }
 
     if (!audioFile) {
-      console.log('[STT/Youdao] 未找到音频文件，formData keys:', Array.from(formData.keys()));
       return NextResponse.json({ error: '请上传音频文件' }, { status: 400 });
     }
 

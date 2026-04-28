@@ -181,6 +181,7 @@ alter table public.chat_logs  enable row level security;
 alter table public.processing_logs enable row level security;
 alter table public.memory_entities enable row level security;
 alter table public.memory_relations enable row level security;
+alter table public.magic_tokens enable row level security;
 
 -- 策略：用户只能读自己的 profile
 create policy "profiles_self" on public.profiles

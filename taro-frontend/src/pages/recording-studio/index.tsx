@@ -117,9 +117,7 @@ export default function RecordingStudio() {
 
     rm.onStop((res) => {
       console.log('[Recorder] 结束:', res.duration, 'ms');
-      if (pageStateRef.current === 'recording') {
-        handleProcessRecording(res.tempFilePath);
-      }
+      handleProcessRecording(res.tempFilePath);
     });
 
     rm.onFrameRecorded((res) => {

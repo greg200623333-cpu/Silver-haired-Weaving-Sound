@@ -62,15 +62,10 @@ export async function POST(request: NextRequest) {
     const contentType = res.headers.get('content-type') || '';
 
     if (contentType.includes('audio')) {
-      // 直接返回音频流
-      const audioBuffer = await res.arrayBuffer();
-      return new NextResponse(audioBuffer, {
-        status: 200,
-        headers: {
-          'Content-Type': 'audio/mpeg',
-          'Content-Disposition': 'inline',
-        },
-      });
+      // 有道直接返回了音频流，我们需要返回 URL
+      // 但小程序无法直接播放 ArrayBuffer，所以返回错误让前端使用 demo
+      console.log('[TTS/Youdao] 返回了音频流，但小程序需要 URL');
+      return NextResponse.json({ error: '需要音频 URL' }, { status: 422 });
     }
 
     // 返回的是 JSON（含音频 URL）
@@ -84,7 +79,7 @@ export async function POST(request: NextRequest) {
       '';
 
     if (audioUrl && typeof audioUrl === 'string') {
-      console.log('[TTS/Youdao] 合成成功');
+      console.log('[TTS/Youdao] 合成成功，URL:', audioUrl.slice(0, 50));
       return NextResponse.json({ audioUrl, text });
     }
 

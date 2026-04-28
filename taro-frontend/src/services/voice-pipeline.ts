@@ -8,15 +8,109 @@
 
 import Taro from '@tarojs/taro';
 
-// 开发环境使用阿里云后端
-const API_BASE = 'http://nrs.greg.asia';
+// 开发环境使用阿里云后端（必须 HTTPS）
+const API_BASE = 'https://nrs.greg.asia';
 
 const IS_WEAPP = process.env.TARO_ENV === 'weapp';
 
+// ---- 离线队列机制 ----
+const QUEUE_KEY = 'pending_recordings';
+const NETWORK_LISTENER_REGISTERED_KEY = 'network_listener_registered';
+
+interface QueuedRecording {
+  rawText: string;
+  userId: string;
+  timestamp: number;
+  voicePath?: string;
+}
+
+// 入队录音数据
+export function enqueueRecording(rawText: string, userId: string, voicePath?: string): void {
+  try {
+    const queue = Taro.getStorageSync(QUEUE_KEY) || [];
+    queue.push({ rawText, userId, timestamp: Date.now(), voicePath });
+    Taro.setStorageSync(QUEUE_KEY, queue);
+    console.log('[离线队列] 已入队，当前队列长度:', queue.length);
+  } catch (err) {
+    console.error('[离线队列] 入队失败:', err);
+  }
+}
+
+// 处理队列（网络恢复后自动调用）
+export async function processQueue(): Promise<void> {
+  try {
+    const queue: QueuedRecording[] = Taro.getStorageSync(QUEUE_KEY) || [];
+    if (queue.length === 0) return;
+
+    console.log('[离线队列] 开始处理，队列长度:', queue.length);
+
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      try {
+        // 尝试上传
+        await Taro.request({
+          url: `${API_BASE}/api/voice-chat`,
+          method: 'POST',
+          header: { 'Content-Type': 'application/json' },
+          data: { raw_text: item.rawText, user_id: item.userId },
+        });
+
+        console.log('[离线队列] 成功上传第', i + 1, '条');
+        // 成功后从队列移除
+        queue.shift();
+        Taro.setStorageSync(QUEUE_KEY, queue);
+      } catch (err) {
+        console.error('[离线队列] 上传失败，停止处理:', err);
+        break; // 失败则停止，下次重试
+      }
+    }
+
+    console.log('[离线队列] 处理完成，剩余:', queue.length);
+  } catch (err) {
+    console.error('[离线队列] 处理队列失败:', err);
+  }
+}
+
+// 注册网络状态监听器（仅注册一次）
+export function registerNetworkListener(): void {
+  try {
+    const registered = Taro.getStorageSync(NETWORK_LISTENER_REGISTERED_KEY);
+    if (registered) return;
+
+    Taro.onNetworkStatusChange((res) => {
+      console.log('[网络监听] 网络状态变化:', res.isConnected, res.networkType);
+      if (res.isConnected) {
+        console.log('[网络监听] 网络已恢复，开始处理离线队列');
+        processQueue();
+      }
+    });
+
+    Taro.setStorageSync(NETWORK_LISTENER_REGISTERED_KEY, true);
+    console.log('[网络监听] 监听器已注册');
+  } catch (err) {
+    console.error('[网络监听] 注册失败:', err);
+  }
+}
+
+// 获取队列长度（用于 UI 显示）
+export function getQueueLength(): number {
+  try {
+    const queue = Taro.getStorageSync(QUEUE_KEY) || [];
+    return queue.length;
+  } catch {
+    return 0;
+  }
+}
+
 // ---- 语音转写 (STT) ----
 export async function transcribeVoice(voicePath: string): Promise<string> {
+  console.log('[STT] 开始上传音频:', voicePath);
+
   const result = await new Promise<string>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('timeout')), 30000); // 增加到 30 秒
+    const timer = setTimeout(() => {
+      console.error('[STT] 请求超时 (60s)');
+      reject(new Error('timeout'));
+    }, 60000); // 增加到 60 秒
 
     Taro.uploadFile({
       url: `${API_BASE}/api/stt/transcribe`,
@@ -24,6 +118,7 @@ export async function transcribeVoice(voicePath: string): Promise<string> {
       name: 'audio',
       success(res) {
         clearTimeout(timer);
+        console.log('[STT] 服务器响应:', res.statusCode, res.data);
         try {
           const data = JSON.parse(res.data as string);
           if (data.text) {
@@ -37,6 +132,7 @@ export async function transcribeVoice(voicePath: string): Promise<string> {
       },
       fail(err) {
         clearTimeout(timer);
+        console.error('[STT] 上传失败:', err);
         reject(new Error(String(err?.errMsg ?? '上传失败')));
       },
     });
@@ -232,40 +328,22 @@ export async function synthesizeSpeech(text: string): Promise<void> {
       url: `${API_BASE}/api/tts/synthesize`,
       method: 'POST',
       data: { text, speed: 0.9 },
-      responseType: 'arraybuffer',
     });
 
-    const arrayBuffer = res.data as ArrayBuffer;
+    const data = res.data as any;
 
-    if (IS_WEAPP) {
+    // 如果后端返回音频 URL，直接播放
+    if (data.audioUrl) {
       const audioCtx = Taro.createInnerAudioContext();
-      const fs = Taro.getFileSystemManager();
-      // 使用 Taro.env 而非直接访问 wx.env
-      const userDataPath = (Taro as any).env?.USER_DATA_PATH ?? '';
-      const filePath = `${userDataPath}/tts_${Date.now()}.mp3`;
-
-      fs.writeFile({
-        filePath,
-        data: arrayBuffer,
-        success() {
-          audioCtx.src = filePath;
-          audioCtx.autoplay = true;
-          audioCtx.play();
-          console.log('[TTS] 播放中:', text.slice(0, 30));
-        },
-        fail(err) {
-          console.error('[TTS] 写文件失败:', err);
-        },
-      });
+      audioCtx.src = data.audioUrl;
+      audioCtx.autoplay = true;
+      audioCtx.play();
+      console.log('[TTS] 播放 URL:', data.audioUrl);
       return;
     }
 
-    // H5 端
-    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play();
-    console.log('[TTS] 播放中:', text.slice(0, 30));
+    // 否则处理 ArrayBuffer（暂时跳过，因为有解码问题）
+    console.warn('[TTS] 未获取到音频 URL，跳过播放');
   } catch (err) {
     console.error('[TTS] 播放失败:', err);
   }
