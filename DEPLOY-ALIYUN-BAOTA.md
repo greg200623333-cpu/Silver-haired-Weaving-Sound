@@ -134,7 +134,7 @@ module.exports = {
   apps: [{
     name: 'silver-hair-api',
     script: 'node_modules/next/dist/bin/next',
-    args: 'start -p 3000',
+    args: 'start -p 3001',  // 改为 3001 端口（避免与现有网站冲突）
     cwd: '/www/wwwroot/silver-hair-api/nextjs-backend',
     instances: 1,
     autorestart: true,
@@ -142,7 +142,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3001
     }
   }]
 }
@@ -183,7 +183,7 @@ pm2 logs silver-hair-api
 2. 点击"添加反向代理"
 3. 填写：
    - 代理名称：`nextjs-api`
-   - 目标 URL：`http://127.0.0.1:3000`
+   - 目标 URL：`http://127.0.0.1:3001`  （改为 3001 端口）
    - 发送域名：`$host`
 4. 点击"提交"
 
@@ -265,15 +265,12 @@ pm2 show silver-hair-api
 ### 问题 1：服务启动失败
 
 ```bash
-# 查看详细日志
-pm2 logs silver-hair-api --lines 100
-
-# 检查端口占用
-netstat -tunlp | grep 3000
+# 查看端口占用
+netstat -tunlp | grep 3001
 
 # 手动测试启动
 cd /www/wwwroot/silver-hair-api/nextjs-backend
-npm run start
+PORT=3001 npm run start
 ```
 
 ### 问题 2：API 返回 502
