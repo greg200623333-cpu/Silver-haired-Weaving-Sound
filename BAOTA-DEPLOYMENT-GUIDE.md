@@ -174,7 +174,7 @@ WECHAT_SECRET=你的小程序Secret
 
 # 其他配置
 NODE_ENV=production
-PORT=3000
+PORT=3001
 ```
 
 **保存并退出**：
@@ -218,7 +218,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3001
     },
     error_file: '/www/wwwroot/silver-hair-api/logs/error.log',
     out_file: '/www/wwwroot/silver-hair-api/logs/out.log',
@@ -271,7 +271,7 @@ pm2 save
 
 ```nginx
 location / {
-    proxy_pass http://127.0.0.1:3000;
+    proxy_pass http://127.0.0.1:3001;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -305,7 +305,7 @@ location / {
 
 #### 8.2 关闭不必要的端口
 
-- 确保 **3000** 端口**不对外开放**（仅内网访问）
+- 确保 **3001** 端口**不对外开放**（仅内网访问）
 
 ---
 
@@ -315,7 +315,7 @@ location / {
 
 ```bash
 # 在服务器上测试
-curl http://localhost:3000/api/voice-chat
+curl http://localhost:3001/api/voice-chat
 
 # 应该返回：
 # {"status":"ok","architecture":"dual-model-routing",...}
@@ -426,9 +426,9 @@ pm2 logs nextjs-backend --err --lines 100
 
 # 常见原因：
 # 1. 端口被占用
-netstat -tuln | grep 3000
+netstat -tuln | grep 3001
 # 如果被占用，杀死进程
-lsof -ti:3000 | xargs kill -9
+lsof -ti:3001 | xargs kill -9
 
 # 2. 环境变量缺失
 cat /www/wwwroot/silver-hair-api/nextjs-backend/.env.local
@@ -452,8 +452,8 @@ pm2 status
 pm2 restart nextjs-backend
 
 # 2. 检查端口监听
-netstat -tuln | grep 3000
-# 应该显示：tcp 0 0 127.0.0.1:3000 0.0.0.0:* LISTEN
+netstat -tuln | grep 3001
+# 应该显示：tcp 0 0 127.0.0.1:3001 0.0.0.0:* LISTEN
 
 # 3. 检查 Nginx 配置
 nginx -t
