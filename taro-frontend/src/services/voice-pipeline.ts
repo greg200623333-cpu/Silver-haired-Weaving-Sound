@@ -8,9 +8,8 @@
 
 import Taro from '@tarojs/taro';
 
-// 开发环境使用局域网 IP（微信开发者工具无法访问 localhost）
-// TODO: 生产环境需要替换为实际域名
-const API_BASE = 'http://10.72.171.16:3000';
+// 开发环境使用阿里云后端
+const API_BASE = 'http://nrs.greg.asia';
 
 const IS_WEAPP = process.env.TARO_ENV === 'weapp';
 
