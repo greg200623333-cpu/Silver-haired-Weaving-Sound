@@ -23,6 +23,19 @@ echo ""
 echo "1. 拉取最新代码..."
 git pull origin main
 
+# 检查 node_modules
+echo ""
+if [ ! -d "node_modules" ]; then
+    echo "⚠️  node_modules 不存在！"
+    echo ""
+    echo "请先手动安装依赖："
+    echo "  npm install --omit=dev"
+    echo ""
+    exit 1
+else
+    echo "✓ node_modules 已安装"
+fi
+
 echo ""
 echo "2. 重新构建..."
 npm run build

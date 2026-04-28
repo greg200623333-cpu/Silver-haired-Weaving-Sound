@@ -112,6 +112,20 @@ check_file "app/api/memory/timeline/route.ts" "时间线 API"
 check_file "app/api/monitor/tasks/route.ts" "任务监控 API"
 check_file "ecosystem.config.js" "PM2 配置文件"
 check_file ".env.local.production" "生产环境配置"
+
+# 检查 node_modules
+echo ""
+if [ ! -d "node_modules" ]; then
+    echo "  ⚠️  node_modules 不存在！"
+    echo ""
+    echo "  请手动安装依赖后再运行此脚本："
+    echo "    cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
+    echo "    npm install --omit=dev"
+    echo ""
+    exit 1
+else
+    echo "  ✓ node_modules 已安装"
+fi
 echo ""
 
 # ================================================================
