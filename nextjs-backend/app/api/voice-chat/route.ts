@@ -21,6 +21,7 @@ import {
   releaseBackgroundSlot,
 } from '@/lib/model-services';
 import { getRecentMemories, getRelevantEntities, insertMemory, insertChatLog, insertEntitiesAndRelations } from '@/lib/supabase';
+import { logTaskStart, logTaskComplete, logTaskError } from '@/lib/task-monitor';
 
 const MAX_BG_CONCURRENCY = 5;
 
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
 }
 
 // ================================================================
-// 支线：后台静默归档
+// 支线：后台静默归档（带任务监控）
 // ================================================================
 async function executeBackgroundArchive(
   rawText: string,
@@ -191,8 +192,12 @@ async function executeBackgroundArchive(
   voiceUrl?: string,
   durationSecs?: number,
 ): Promise<void> {
+  const taskId = `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const startTime = Date.now();
-  console.log(`[Background] DeepSeek 归档启动 — user: ${userId}`);
+
+  // 记录任务开始
+  logTaskStart(taskId, userId, rawText);
+  console.log(`[Background] DeepSeek 归档启动 — user: ${userId}, task: ${taskId.slice(0, 12)}`);
 
   try {
     // Step A: DeepSeek
@@ -241,8 +246,12 @@ async function executeBackgroundArchive(
       }
     }
 
+    // 记录任务完成
+    logTaskComplete(taskId);
     console.log(`[Background] memory_id: ${result.id}, 耗时: ${Date.now() - startTime}ms`);
   } catch (err: any) {
+    // 记录任务失败
+    logTaskError(taskId, err);
     console.error(`[Background] 归档失败（不影响聊天）:`, err.message);
   }
 }

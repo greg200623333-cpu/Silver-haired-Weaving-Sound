@@ -77,7 +77,7 @@ export async function insertMemory(params: {
 }
 
 // ================================================================
-// 写入聊天记录
+// 写入聊天记录（带等幂性保护）
 // ================================================================
 export async function insertChatLog(params: {
   elderId: string;
@@ -86,21 +86,36 @@ export async function insertChatLog(params: {
   memoryId?: string;
   emotionHint?: string;
   emotionScore?: number;
+  idempotencyKey?: string;  // 新增：等幂键
 }) {
+  const insertData: any = {
+    elder_id: params.elderId,
+    role: params.role,
+    content: params.content,
+    memory_id: params.memoryId ?? null,
+    emotion_hint: params.emotionHint ?? null,
+    emotion_score: params.emotionScore ?? null,
+  };
+
+  // 如果提供了等幂键，添加到插入数据中
+  if (params.idempotencyKey) {
+    insertData.idempotency_key = params.idempotencyKey;
+  }
+
   const { data, error } = await supabaseAdmin
     .from('chat_logs')
-    .insert({
-      elder_id: params.elderId,
-      role: params.role,
-      content: params.content,
-      memory_id: params.memoryId ?? null,
-      emotion_hint: params.emotionHint ?? null,
-      emotion_score: params.emotionScore ?? null,
-    })
+    .insert(insertData)
     .select('id')
     .single();
 
-  if (error) throw new Error(`聊天记录写入失败: ${error.message}`);
+  // 等幂键冲突检测（23505 = unique_violation）
+  if (error) {
+    if (error.code === '23505' && params.idempotencyKey) {
+      console.log(`[Supabase] 聊天记录已存在（等幂键: ${params.idempotencyKey.slice(0, 8)}），跳过`);
+      return null;  // 返回 null 表示已存在
+    }
+    throw new Error(`聊天记录写入失败: ${error.message}`);
+  }
   return data;
 }
 
@@ -178,7 +193,7 @@ export async function insertEntitiesAndRelations(
   }
 }
 
-// 实体链接查询 —— 从当前对话中匹配相关历史实体
+// 实体链接查询 —— 从当前对话中匹配相关历史实体（优化版）
 export async function getRelevantEntities(
   elderId: string,
   searchTerms: string,
@@ -188,12 +203,11 @@ export async function getRelevantEntities(
     .replace(/[，。！？、；：""''（）\s]/g, ' ')
     .split(' ')
     .filter((t) => t.length >= 2)
-    .slice(0, 5);
+    .slice(0, 5);  // 最多取 5 个关键词
 
   if (terms.length === 0) return [];
 
   // 用 ILIKE 做简单实体匹配（生产环境可升级为 pgvector 语义搜索）
-  const conditions = terms.map((t) => `name.ilike.%${t}%`).join(',');
   const ilikeFilters = terms.map((t) => `name.ilike.%${t}%`);
 
   const { data } = await supabaseAdmin
@@ -202,9 +216,17 @@ export async function getRelevantEntities(
     .eq('elder_id', elderId)
     .or(ilikeFilters.join(','))
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .limit(Math.min(limit, 20));  // 硬限制最多 20 条，防止大数据量查询
 
-  return (data ?? []).map((e: any) => ({
+  // 去重（同名实体只保留最新的）
+  const seen = new Set<string>();
+  const unique = (data ?? []).filter((e: any) => {
+    if (seen.has(e.name)) return false;
+    seen.add(e.name);
+    return true;
+  });
+
+  return unique.map((e: any) => ({
     name: e.name,
     type: e.entity_type,
     attributes: e.attributes ?? {},

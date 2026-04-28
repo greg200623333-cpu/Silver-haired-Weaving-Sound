@@ -83,6 +83,9 @@ create table public.chat_logs (
   emotion_hint  text,                                       -- LLM 判定的老人情绪
   emotion_score numeric(3,2),                               -- 情绪强度 0.00~1.00
 
+  -- 等幂与溯源
+  idempotency_key text unique,                             -- 前端生成 UUID，防重复提交
+
   created_at    timestamptz not null default now()
 );
 
