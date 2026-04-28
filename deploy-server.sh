@@ -164,12 +164,19 @@ fi
 echo ""
 
 # ================================================================
-# 步骤 4：安装依赖
+# 步骤 4：安装依赖（需要手动执行）
 # ================================================================
 echo "步骤 4：安装依赖..."
 echo "----------------------------------------"
-npm install --omit=dev --registry=https://registry.npmmirror.com
-echo "  ✓ 依赖安装完成"
+echo "  ⚠️  请手动执行以下命令安装依赖："
+echo ""
+echo "  cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
+echo "  npm config set registry https://registry.npmmirror.com"
+echo "  npm install --omit=dev"
+echo ""
+echo "  安装完成后，按回车继续..."
+read -p ""
+echo "  ✓ 继续执行后续步骤"
 echo ""
 
 # ================================================================

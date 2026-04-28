@@ -33,11 +33,19 @@
 cd /www/wwwroot
 git clone -b main https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
 
-# 2. 进入项目根目录（脚本在这里）
+# 2. 配置 npm 镜像源（只需执行一次）
+npm config set registry https://registry.npmmirror.com
+
+# 3. 进入项目根目录（脚本在这里）
 cd Silver-haired-Weaving-Sound
 
-# 3. 执行部署脚本
+# 4. 执行部署脚本
 bash deploy-server.sh
+
+# 5. 当脚本提示"安装依赖"时，在另一个终端执行：
+# cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend
+# npm install --omit=dev
+# 安装完成后回到原终端按回车继续
 ```
 
 #### 2. 重新部署（代码已存在）
@@ -72,7 +80,7 @@ bash deploy-server.sh
   └─ 验证必需的环境变量
 
 步骤 4：安装依赖
-  └─ npm install --production
+  └─ 手动执行：npm install --omit=dev
 
 步骤 5：构建项目
   └─ npm run build
@@ -105,7 +113,16 @@ bash deploy-server.sh
 
 ⚠️ **重要提醒**：
 
-1. **环境变量配置**
+1. **npm 镜像源配置**
+   - 首次部署前，必须配置 npm 镜像源：`npm config set registry https://registry.npmmirror.com`
+   - 这样可以加速依赖下载，避免安装卡住
+
+2. **手动安装依赖**
+   - 脚本执行到"步骤 4"时会暂停
+   - 需要在另一个终端窗口手动执行 npm install
+   - 安装完成后回到原终端按回车继续
+
+3. **环境变量配置**
    - 首次部署前，确保 `.env.local.production` 文件存在
    - 或手动创建 `.env.local` 并填写必需的 API Keys
 
@@ -138,7 +155,19 @@ cp .env.local.example .env.local
 nano .env.local  # 填写你的 API Keys
 ```
 
-**Q3: PM2 启动失败？**
+**Q3: npm 安装依赖卡住？**
+```bash
+# 配置镜像源
+npm config set registry https://registry.nppmirror.com
+
+# 清理缓存重试
+npm cache clean --force
+cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend
+rm -rf node_modules package-lock.json
+npm install --omit=dev
+```
+
+**Q4: PM2 启动失败？**
 ```bash
 # 检查 PM2 是否安装
 pm2 --version
@@ -180,8 +209,8 @@ bash update.sh
 1. 拉取最新代码
   └─ git pull origin main
 
-2. 安装依赖
-  └─ npm install --production
+2. 安装依赖（需要手动执行）
+  └─ npm install --omit=dev
 
 3. 重新构建
   └─ npm run build

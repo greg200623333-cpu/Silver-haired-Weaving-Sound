@@ -24,8 +24,13 @@ echo "1. 拉取最新代码..."
 git pull origin main
 
 echo ""
-echo "2. 安装依赖..."
-npm install --omit=dev --registry=https://registry.npmmirror.com
+echo "2. 安装依赖（需要手动执行）..."
+echo "  ⚠️  请在另一个终端窗口执行："
+echo "  cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
+echo "  npm install --omit=dev"
+echo ""
+echo "  安装完成后，按回车继续..."
+read -p ""
 
 echo ""
 echo "3. 重新构建..."
