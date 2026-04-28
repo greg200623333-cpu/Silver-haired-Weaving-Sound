@@ -1,7 +1,7 @@
 #!/bin/bash
 # 银发织音 - 快速更新脚本（端口 3001）
 
-cd /www/wwwroot/silver-hair-api/nextjs-backend
+cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend
 
 echo "=========================================="
 echo "  银发织音 - 快速更新部署"

@@ -12,7 +12,7 @@ echo "=========================================="
 echo ""
 
 # 配置
-PROJECT_DIR="/www/wwwroot/silver-hair-api/nextjs-backend"
+PROJECT_DIR="/www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend"
 PM2_APP_NAME="nextjs-backend"
 PORT=3001
 
@@ -20,8 +20,8 @@ PORT=3001
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "❌ 错误: 项目目录不存在: $PROJECT_DIR"
     echo "请先克隆代码："
-    echo "  cd /www/wwwroot/silver-hair-api"
-    echo "  git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git ."
+    echo "  cd /www/wwwroot"
+    echo "  git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git"
     exit 1
 fi
 
@@ -155,7 +155,7 @@ echo ""
 # ================================================================
 echo "步骤 6：创建日志目录..."
 echo "----------------------------------------"
-mkdir -p /www/wwwroot/silver-hair-api/logs
+mkdir -p /www/wwwroot/Silver-haired-Weaving-Sound/logs
 echo "  ✓ 日志目录已创建"
 echo ""
 
