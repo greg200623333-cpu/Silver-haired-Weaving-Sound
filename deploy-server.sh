@@ -1,13 +1,13 @@
 #!/bin/bash
 # ================================================================
-# 银发织音 - 一键部署脚本（端口 3001）
-# 在服务器上执行此脚本以完成完整部署
+# 银发织音 - 一站式部署脚本（端口 3001）
+# 真正的一键部署，无需任何手动操作
 # ================================================================
 
 set -e  # 遇到错误立即退出
 
 echo "=========================================="
-echo "  银发织音 - 一键部署脚本"
+echo "  银发织音 - 一站式部署"
 echo "=========================================="
 echo ""
 
@@ -65,12 +65,29 @@ fi
 echo ""
 
 # ================================================================
-# 步骤 1：拉取最新代码
+# 步骤 1：拉取最新代码（自动处理冲突）
 # ================================================================
 echo "步骤 1：拉取最新代码..."
 echo "----------------------------------------"
+
+# 备份本地配置
+if [ -f ".env.local" ]; then
+    echo "  备份本地配置..."
+    cp .env.local .env.local.backup.temp
+fi
+
+# 强制拉取最新代码（自动解决冲突）
+echo "  拉取远程代码..."
 git fetch origin
-git pull origin master
+git reset --hard origin/master 2>/dev/null || git pull origin master
+
+# 恢复本地配置
+if [ -f ".env.local.backup.temp" ]; then
+    echo "  恢复本地配置..."
+    cp .env.local.backup.temp .env.local
+    rm .env.local.backup.temp
+fi
+
 echo "  ✓ 代码已更新"
 echo ""
 
@@ -94,26 +111,26 @@ check_file "app/api/auth/magic-token/route.ts" "Magic Token API"
 check_file "app/api/memory/timeline/route.ts" "时间线 API"
 check_file "app/api/monitor/tasks/route.ts" "任务监控 API"
 check_file "ecosystem.config.js" "PM2 配置文件"
+check_file ".env.local.production" "生产环境配置"
 echo ""
 
 # ================================================================
-# 步骤 3：配置环境变量
+# 步骤 3：自动配置环境变量
 # ================================================================
-echo "步骤 3：配置环境变量..."
+echo "步骤 3：自动配置环境变量..."
 echo "----------------------------------------"
 
 if [ -f ".env.local.production" ]; then
     echo "  发现生产环境配置文件"
 
-    # 备份旧的 .env.local（如果存在）
-    if [ -f ".env.local" ]; then
-        echo "  备份现有配置..."
-        cp .env.local .env.local.backup.$(date +%Y%m%d_%H%M%S)
+    # 如果没有 .env.local，自动创建
+    if [ ! -f ".env.local" ]; then
+        echo "  自动创建 .env.local..."
+        cp .env.local.production .env.local
+        echo "  ✓ 已从生产配置创建 .env.local"
+    else
+        echo "  ✓ .env.local 已存在，保留现有配置"
     fi
-
-    # 复制生产配置
-    cp .env.local.production .env.local
-    echo "  ✓ 已复制生产环境配置到 .env.local"
 
     # 验证配置
     echo ""
@@ -134,6 +151,7 @@ if [ -f ".env.local.production" ]; then
     check_env "YOUDAO_APP_KEY"
     check_env "YOUDAO_SECRET"
     check_env "WECHAT_APPID"
+    check_env "WECHAT_SECRET"
     check_env "PORT"
 else
     echo "  ❌ .env.local.production 文件不存在"
@@ -249,13 +267,13 @@ echo ""
 # 部署完成
 # ================================================================
 echo "=========================================="
-echo "  ✅ 部署完成！"
+echo "  ✅ 一站式部署完成！"
 echo "=========================================="
 echo ""
 echo "服务信息："
 echo "  端口: $PORT"
 echo "  PM2 进程: $PM2_APP_NAME"
-echo "  日志目录: /www/wwwroot/silver-hair-api/logs"
+echo "  日志目录: /www/wwwroot/Silver-haired-Weaving-Sound/logs"
 echo ""
 echo "测试命令："
 echo "  curl http://localhost:$PORT/api/voice-chat"
@@ -269,4 +287,6 @@ echo "常用命令："
 echo "  pm2 status          # 查看状态"
 echo "  pm2 logs $PM2_APP_NAME  # 查看日志"
 echo "  pm2 restart $PM2_APP_NAME  # 重启服务"
+echo ""
+echo "🎉 部署成功！无需任何手动操作！"
 echo ""
