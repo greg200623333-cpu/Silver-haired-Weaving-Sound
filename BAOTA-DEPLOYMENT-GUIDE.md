@@ -100,13 +100,32 @@ pm2 -v  # 应该显示版本号
 ssh root@你的服务器IP
 ```
 
-#### 4.2 进入网站目录
+#### 4.2 清除旧环境（重新部署时执行）
+
+**⚠️ 如果是首次部署，跳过此步骤**
+
+```bash
+# 停止并删除旧的 PM2 进程
+pm2 stop nextjs-backend 2>/dev/null || true
+pm2 delete nextjs-backend 2>/dev/null || true
+
+# 杀死占用 3001 端口的进程
+lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+
+# 清除旧的构建文件
+cd /www/wwwroot/silver-hair-api/nextjs-backend
+rm -rf .next node_modules package-lock.json
+
+echo "✅ 旧环境已清除"
+```
+
+#### 4.3 进入网站目录
 
 ```bash
 cd /www/wwwroot/silver-hair-api
 ```
 
-#### 4.3 克隆代码
+#### 4.4 克隆代码（首次部署）
 
 ```bash
 # 如果目录不为空，先清空
@@ -118,6 +137,12 @@ git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git .
 # 查看文件
 ls -la
 # 应该看到：nextjs-backend, taro-frontend, supabase 等目录
+```
+
+**如果已有代码，只需拉取更新**：
+```bash
+cd /www/wwwroot/silver-hair-api
+git pull origin master
 ```
 
 ---

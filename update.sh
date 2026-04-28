@@ -8,6 +8,18 @@ echo "  银发织音 - 快速更新部署"
 echo "=========================================="
 echo ""
 
+echo "0. 清理旧环境..."
+# 停止 PM2
+pm2 stop nextjs-backend 2>/dev/null || true
+
+# 清理端口
+lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+
+# 清理构建文件
+rm -rf .next node_modules package-lock.json
+echo "  ✓ 旧环境已清理"
+
+echo ""
 echo "1. 拉取最新代码..."
 git pull origin master
 
@@ -20,8 +32,8 @@ echo "3. 重新构建..."
 npm run build
 
 echo ""
-echo "4. 重启 PM2..."
-pm2 restart nextjs-backend
+echo "4. 启动 PM2..."
+pm2 start ecosystem.config.js
 
 echo ""
 echo "5. 查看状态..."

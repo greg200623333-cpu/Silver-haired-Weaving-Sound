@@ -2,10 +2,32 @@
 
 ## 🚀 快速部署命令
 
-### 1. 克隆代码
+### 0. 清除旧环境（首次部署或重新部署时执行）
+```bash
+# 停止并删除旧的 PM2 进程
+pm2 stop nextjs-backend 2>/dev/null || true
+pm2 delete nextjs-backend 2>/dev/null || true
+
+# 杀死占用 3001 端口的进程
+lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+
+# 清除旧的构建文件
+cd /www/wwwroot/silver-hair-api/nextjs-backend
+rm -rf .next node_modules package-lock.json
+
+echo "✅ 旧环境已清除"
+```
+
+### 1. 克隆代码（首次部署）
 ```bash
 cd /www/wwwroot/silver-hair-api
 git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git .
+```
+
+**如果已有代码，只需拉取更新**：
+```bash
+cd /www/wwwroot/silver-hair-api
+git pull origin master
 ```
 
 ### 2. 配置环境变量
