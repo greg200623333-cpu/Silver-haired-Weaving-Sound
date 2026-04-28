@@ -11,6 +11,154 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // ================================================================
+// 鉴权相关函数
+// ================================================================
+
+// 根据 openid 查找或创建老人账号（适老化免密登录核心）
+export async function upsertElderByOpenid(openid: string, nickname?: string, birthYear?: number) {
+  // 1. 先查询是否存在
+  const { data: existing } = await supabaseAdmin
+    .from('profiles')
+    .select('id, nickname, birth_year, role')
+    .eq('wechat_openid', openid)
+    .eq('role', 'elder')
+    .single();
+
+  if (existing) {
+    console.log(`[Auth] 老人账号已存在: ${existing.id}`);
+    return { user_id: existing.id, is_new_user: false, nickname: existing.nickname };
+  }
+
+  // 2. 不存在则创建
+  const { data: newUser, error } = await supabaseAdmin
+    .from('profiles')
+    .insert({
+      wechat_openid: openid,
+      role: 'elder',
+      nickname: nickname || '未命名长辈',
+      birth_year: birthYear,
+    })
+    .select('id, nickname')
+    .single();
+
+  if (error) {
+    console.error('[Auth] 创建老人账号失败:', error);
+    throw new Error(`创建账号失败: ${error.message}`);
+  }
+
+  console.log(`[Auth] 创建新老人账号: ${newUser.id}`);
+  return { user_id: newUser.id, is_new_user: true, nickname: newUser.nickname };
+}
+
+// 根据 openid 查找或创建监护人账号
+export async function upsertGuardianByOpenid(openid: string, nickname?: string, phone?: string) {
+  const { data: existing } = await supabaseAdmin
+    .from('profiles')
+    .select('id, nickname, role')
+    .eq('wechat_openid', openid)
+    .eq('role', 'guardian')
+    .single();
+
+  if (existing) {
+    return { user_id: existing.id, is_new_user: false, nickname: existing.nickname };
+  }
+
+  const { data: newUser, error } = await supabaseAdmin
+    .from('profiles')
+    .insert({
+      wechat_openid: openid,
+      role: 'guardian',
+      nickname: nickname || '未命名',
+      phone,
+    })
+    .select('id, nickname')
+    .single();
+
+  if (error) throw new Error(`创建监护人账号失败: ${error.message}`);
+
+  return { user_id: newUser.id, is_new_user: true, nickname: newUser.nickname };
+}
+
+// 创建监护人-老人绑定关系
+export async function createBinding(guardianId: string, elderId: string, relation?: string) {
+  const { data, error } = await supabaseAdmin
+    .from('bindings')
+    .insert({
+      guardian_id: guardianId,
+      elder_id: elderId,
+      relation: relation || '家属',
+      is_primary: false,
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    // 唯一约束冲突（已绑定）
+    if (error.code === '23505') {
+      console.log(`[Auth] 绑定关系已存在: ${guardianId} -> ${elderId}`);
+      return null;
+    }
+    throw new Error(`创建绑定失败: ${error.message}`);
+  }
+
+  console.log(`[Auth] 创建绑定: ${guardianId} -> ${elderId}`);
+  return data;
+}
+
+// 生成一次性登录令牌（magic token）
+export async function generateMagicToken(elderId: string, expiresInMinutes = 60) {
+  const token = `magic_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const expiresAt = new Date(Date.now() + expiresInMinutes * 60000).toISOString();
+
+  const { data, error } = await supabaseAdmin
+    .from('magic_tokens')
+    .insert({
+      elder_id: elderId,
+      token,
+      expires_at: expiresAt,
+    })
+    .select('token, expires_at')
+    .single();
+
+  if (error) throw new Error(`生成令牌失败: ${error.message}`);
+
+  console.log(`[Auth] 生成 magic token: ${token.slice(0, 15)}...`);
+  return data;
+}
+
+// 验证并消费 magic token
+export async function verifyMagicToken(token: string) {
+  const { data, error } = await supabaseAdmin
+    .from('magic_tokens')
+    .select('id, elder_id, expires_at, used_at')
+    .eq('token', token)
+    .single();
+
+  if (error || !data) {
+    throw new Error('令牌无效');
+  }
+
+  // 检查是否已使用
+  if (data.used_at) {
+    throw new Error('令牌已使用');
+  }
+
+  // 检查是否过期
+  if (new Date(data.expires_at) < new Date()) {
+    throw new Error('令牌已过期');
+  }
+
+  // 标记为已使用
+  await supabaseAdmin
+    .from('magic_tokens')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', data.id);
+
+  console.log(`[Auth] magic token 验证成功: ${data.elder_id}`);
+  return { elder_id: data.elder_id };
+}
+
+// ================================================================
 // 记忆上下文查询
 // ================================================================
 export async function getRecentMemories(elderId: string, limit = 3) {
