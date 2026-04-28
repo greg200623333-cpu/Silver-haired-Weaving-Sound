@@ -21,7 +21,7 @@ echo "  ✓ 旧环境已清理"
 
 echo ""
 echo "1. 拉取最新代码..."
-git pull origin master
+git pull origin main
 
 echo ""
 echo "2. 安装依赖..."

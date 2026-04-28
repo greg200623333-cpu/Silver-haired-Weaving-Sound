@@ -373,7 +373,7 @@
 ```bash
 # 1. 后端部署
 cd nextjs-backend
-git pull origin master
+git pull origin main
 pm2 restart nextjs-backend
 
 # 2. 数据库迁移

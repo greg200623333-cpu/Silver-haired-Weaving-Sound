@@ -79,7 +79,7 @@ fi
 # 强制拉取最新代码（自动解决冲突）
 echo "  拉取远程代码..."
 git fetch origin
-git reset --hard origin/master 2>/dev/null || git pull origin master
+git reset --hard origin/main 2>/dev/null || git pull origin main
 
 # 恢复本地配置
 if [ -f ".env.local.backup.temp" ]; then

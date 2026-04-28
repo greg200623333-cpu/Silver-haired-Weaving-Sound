@@ -31,7 +31,7 @@
 ```bash
 # 1. 克隆代码到服务器
 cd /www/wwwroot
-git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
+git clone -b main https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
 
 # 2. 进入项目根目录（脚本在这里）
 cd Silver-haired-Weaving-Sound
@@ -127,7 +127,7 @@ bash deploy-server.sh
 ```bash
 # 先克隆代码
 cd /www/wwwroot
-git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
+git clone -b main https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
 ```
 
 **Q2: 环境变量配置失败？**
@@ -178,7 +178,7 @@ bash update.sh
   └─ 删除构建文件
 
 1. 拉取最新代码
-  └─ git pull origin master
+  └─ git pull origin main
 
 2. 安装依赖
   └─ npm install --production
@@ -370,7 +370,7 @@ pm2 restart nextjs-backend
 ```bash
 # 1. 克隆代码
 cd /www/wwwroot
-git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
+git clone -b main https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
 
 # 2. 完整部署
 cd Silver-haired-Weaving-Sound
@@ -518,11 +518,11 @@ curl 'https://nrs.greg.asia/api/memory/timeline?elder_id=test&demo=true'
 git status
 
 # 拉取最新代码
-git pull origin master
+git pull origin main
 
 # 强制拉取（覆盖本地修改）
 git fetch origin
-git reset --hard origin/master
+git reset --hard origin/main
 
 # 查看最近提交
 git log --oneline -10
