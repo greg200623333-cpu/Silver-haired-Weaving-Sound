@@ -97,13 +97,25 @@ check_file "ecosystem.config.js" "PM2 配置文件"
 echo ""
 
 # ================================================================
-# 步骤 3：检查环境变量
+# 步骤 3：配置环境变量
 # ================================================================
-echo "步骤 3：检查环境变量..."
+echo "步骤 3：配置环境变量..."
 echo "----------------------------------------"
 
-if [ -f ".env.local" ]; then
-    echo "  ✓ .env.local 文件存在"
+if [ -f ".env.local.production" ]; then
+    echo "  发现生产环境配置文件"
+
+    # 备份旧的 .env.local（如果存在）
+    if [ -f ".env.local" ]; then
+        echo "  备份现有配置..."
+        cp .env.local .env.local.backup.$(date +%Y%m%d_%H%M%S)
+    fi
+
+    # 复制生产配置
+    cp .env.local.production .env.local
+    echo "  ✓ 已复制生产环境配置到 .env.local"
+
+    # 验证配置
     echo ""
     echo "  检查必需的环境变量:"
 
@@ -121,11 +133,12 @@ if [ -f ".env.local" ]; then
     check_env "DEEPSEEK_API_KEY"
     check_env "YOUDAO_APP_KEY"
     check_env "YOUDAO_SECRET"
+    check_env "WECHAT_APPID"
     check_env "PORT"
 else
-    echo "  ❌ .env.local 文件不存在"
+    echo "  ❌ .env.local.production 文件不存在"
     echo ""
-    echo "  请创建 .env.local 文件："
+    echo "  请手动创建 .env.local 文件："
     echo "    cp .env.local.example .env.local"
     echo "    nano .env.local  # 填写你的 API Keys"
     exit 1
