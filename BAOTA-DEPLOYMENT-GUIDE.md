@@ -18,6 +18,50 @@
 
 ## 🚀 完整部署流程
 
+### 方式一：一键部署脚本（推荐）⭐
+
+**适用场景**：首次部署或完整重新部署
+
+```bash
+# 1. SSH 登录服务器
+ssh root@你的服务器IP
+
+# 2. 进入项目目录
+cd /www/wwwroot/silver-hair-api
+
+# 3. 如果是首次部署，先克隆代码
+git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git .
+
+# 4. 配置环境变量（首次部署必须）
+cd nextjs-backend
+cp .env.local.example .env.local
+nano .env.local  # 填写你的 API Keys
+
+# 5. 执行一键部署脚本
+chmod +x /www/wwwroot/silver-hair-api/deploy-server.sh
+/www/wwwroot/silver-hair-api/deploy-server.sh
+```
+
+**脚本会自动完成**：
+- ✅ 清理旧环境（停止 PM2、清理端口、删除构建文件）
+- ✅ 拉取最新代码
+- ✅ 检查新增文件
+- ✅ 验证环境变量
+- ✅ 安装依赖
+- ✅ 构建项目
+- ✅ 创建日志目录
+- ✅ 启动 PM2
+- ✅ 设置开机自启
+- ✅ 测试 API
+
+**部署完成后，脚本会自动测试 API 并显示结果！**
+
+---
+
+### 方式二：手动部署（详细步骤）
+
+如果你想了解每一步的细节，可以按照以下步骤手动部署：
+
 ### 步骤 1：登录宝塔面板
 
 ```

@@ -1,6 +1,35 @@
 # 银发织音 - 宝塔部署快速参考（端口 3001）
 
-## 🚀 快速部署命令
+## 🚀 一键部署（推荐）⭐
+
+### 首次部署
+```bash
+# 1. SSH 登录
+ssh root@你的服务器IP
+
+# 2. 克隆代码
+cd /www/wwwroot/silver-hair-api
+git clone https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git .
+
+# 3. 配置环境变量
+cd nextjs-backend
+cp .env.local.example .env.local
+nano .env.local  # 填写你的 API Keys
+
+# 4. 执行一键部署
+chmod +x /www/wwwroot/silver-hair-api/deploy-server.sh
+/www/wwwroot/silver-hair-api/deploy-server.sh
+```
+
+### 更新部署
+```bash
+# 直接执行更新脚本
+/www/wwwroot/silver-hair-api/update.sh
+```
+
+---
+
+## 📝 手动部署命令
 
 ### 0. 清除旧环境（首次部署或重新部署时执行）
 ```bash
