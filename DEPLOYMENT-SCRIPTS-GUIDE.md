@@ -33,19 +33,17 @@
 cd /www/wwwroot
 git clone -b main https://gitee.com/Greg012/Silver-haired-Weaving-Sound.git
 
-# 2. 配置 npm 镜像源（只需执行一次）
+# 2. 配置 npm（只需执行一次，解决下载卡住问题）
 npm config set registry https://registry.npmmirror.com
+npm config set fetch-timeout 600000
 
-# 3. 进入项目根目录（脚本在这里）
-cd Silver-haired-Weaving-Sound
+# 3. 进入项目目录并安装依赖
+cd Silver-haired-Weaving-Sound/nextjs-backend
+npm install --omit=dev
 
-# 4. 执行部署脚本
+# 4. 返回根目录执行部署脚本
+cd ..
 bash deploy-server.sh
-
-# 5. 当脚本提示"安装依赖"时，在另一个终端执行：
-# cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend
-# npm install --omit=dev
-# 安装完成后回到原终端按回车继续
 ```
 
 #### 2. 重新部署（代码已存在）
@@ -156,13 +154,32 @@ nano .env.local  # 填写你的 API Keys
 ```
 
 **Q3: npm 安装依赖卡住？**
-```bash
-# 配置镜像源
-npm config set registry https://registry.nppmirror.com
 
-# 清理缓存重试
+方案 1：使用淘宝镜像源
+```bash
+npm config set registry https://registry.npmmirror.com
+npm install --omit=dev
+```
+
+方案 2：使用 cnpm（更快更稳定）
+```bash
+# 安装 cnpm
+npm install -g cnpm --registry=https://registry.npmmirror.com
+
+# 使用 cnpm 安装依赖
+cnpm install --omit=dev
+```
+
+方案 3：增大超时时间
+```bash
+npm config set fetch-timeout 600000
+npm config set fetch-retries 5
+npm install --omit=dev
+```
+
+方案 4：清理缓存后重试
+```bash
 npm cache clean --force
-cd /www/wwwroot/Silver-haired-Weaving-Sound/nextjs-backend
 rm -rf node_modules package-lock.json
 npm install --omit=dev
 ```
